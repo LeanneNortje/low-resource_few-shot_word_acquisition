@@ -6,10 +6,9 @@
 */data/*_lookup.npz
 */few-shot-sampling/segment_examples/
 */model_metadata/
-
-
 */pretrained/
 */pretrained_cpc/
+super_5-shot_5-way/
 
 */__pycache__/*
 */__pycache__/*.pyc
