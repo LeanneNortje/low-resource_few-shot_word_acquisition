@@ -1,0 +1,15 @@
+*/audio-image_examples/
+*/audio-image_test_examples/
+*/data/spokencoco/
+*/data/*.json
+*/data/sampled_*.npz
+*/data/*_lookup.npz
+*/few-shot-sampling/segment_examples/
+*/model_metadata/
+
+
+*/pretrained/
+*/pretrained_cpc/
+
+*/__pycache__/*
+*/__pycache__/*.pyc
