@@ -343,7 +343,7 @@ with torch.no_grad():
                 lookup = str(Path(wav).stem)
                 if lookup in yoruba_alignments:
                     if w in yoruba_alignments[lookup]:
-                        this_english_audio_feat, this_english_nframes = LoadAudio(aud_files/ Path('flickr_audio_yoruba_test') / Path(wav + '.wav'), yoruba_alignments[lookup][w], audio_conf)
+                        this_english_audio_feat, this_english_nframes = LoadAudio(aud_files / Path('flickr_audio_yoruba_test') / Path(wav + '.wav'), yoruba_alignments[lookup][w], audio_conf)
                         this_english_audio_feat, this_english_nframes = PadFeat(this_english_audio_feat, target_length, padval)
                         _, _, query = audio_model(this_english_audio_feat.to(rank))
                         n_frames = NFrames(this_english_audio_feat, query, this_english_nframes) 
@@ -353,7 +353,7 @@ with torch.no_grad():
                         if w == m_labels[ind]: 
                             results[w]['correct'] += 1
                         results[w]['total'] += 1
-            if episode_num == 99: break
+            # if episode_num == 99: break
             
             
         c = 0

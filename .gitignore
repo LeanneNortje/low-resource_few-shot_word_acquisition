@@ -9,6 +9,7 @@
 */pretrained/
 */pretrained_cpc/
 super_5-shot_5-way/
+super_5-shot_5-way_yoruba_english_pretrain/
 
 */__pycache__/*
 */__pycache__/*.pyc
