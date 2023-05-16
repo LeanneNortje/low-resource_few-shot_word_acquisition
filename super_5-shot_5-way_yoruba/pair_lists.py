@@ -66,27 +66,30 @@ for l in key:
     print(f'{key[l]}: {l}')
 
 data = np.load(Path("./data/sampled_audio_data.npz"), allow_pickle=True)['data'].item()
+info = np.load(Path("./data/sampled_audio_frame_info.npz"), allow_pickle=True)['data'].item()
 
 audio_list_dir = Path('./data/audio_pair_lists')
 audio_list_dir.mkdir(parents=True, exist_ok=True)
 
 for id in data:
     fn = audio_list_dir / f'{id_to_word_key[id]}.txt'
-    # print(id, id_to_word_key[id])
+
     with open(fn, 'w') as f:
-        for wav in data[id]:
+        for wav, start, end in info[id]:
             wav_name = wav.stem
-            f.write(f'{wav_name}\n')
+            f.write(f'{wav_name} {int(start)} {int(end)}\n')
+    # for wav, start, end in info[id]:
+    #     if wav not in data[id]: print(id, wav)
 
-data = np.load(Path("./data/sampled_img_data.npz"), allow_pickle=True)['data'].item()
+# data = np.load(Path("./data/sampled_img_data.npz"), allow_pickle=True)['data'].item()
 
-image_list_dir = Path('./data/image_pair_lists')
-image_list_dir.mkdir(parents=True, exist_ok=True)
+# image_list_dir = Path('./data/image_pair_lists')
+# image_list_dir.mkdir(parents=True, exist_ok=True)
 
-for id in data:
-    fn = image_list_dir / f'{id_to_word_key[id]}.txt'
-    # print(id, id_to_word_key[id])
-    with open(fn, 'w') as f:
-        for im in data[id]:
-            im_name = im.stem
-            f.write(f'{im_name}\n')
+# for id in data:
+#     fn = image_list_dir / f'{id_to_word_key[id]}.txt'
+#     # print(id, id_to_word_key[id])
+#     with open(fn, 'w') as f:
+#         for im in data[id]:
+#             im_name = im.stem
+#             f.write(f'{im_name}\n')
