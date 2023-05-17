@@ -29,12 +29,14 @@ with open('../data/test_keywords.txt', 'r') as f:
 
 yoruba_alignments = {}
 translation = {}
+y2etranslation = {}
 yoruba_vocab = []
 with open(Path('../../../Datasets/yfacc_v6/Flickr8k_text/eng_yoruba_keywords.txt'), 'r') as f:
     for line in f:
         e, y = line.strip().split(', ')
         if e in vocab:
             translation[e] = y.lower()
+            y2etranslation[y.lower()] = e
             yoruba_vocab.append(y.lower())
 for e in translation:
     print(e, translation[e])
@@ -61,7 +63,7 @@ for cap_fn in Path('../../../Datasets/yfacc_v6/Flickr8k_text').rglob('Flickr8k.t
         for line in f:
             parts = line.split()
             cap = ' '.join(parts[1:]) + ' '
-            name = parts[0].split('.')[0]
+            name = parts[0].split('.')[0] + '_' + parts[0].split('#')[-1]
             captions[name] = cap
 
 s_imgs = []
@@ -82,27 +84,24 @@ special_characters = {
 }
 
 data = []
-words2imgs = {}
 words2aud = {}
 for e_w in val:
     w = translation[e_w]
     for im, eng, yor in val[e_w]:
-        name = Path(im).stem
-        if re.search(w + ' ', captions[name]) is not None:
-            # print(w, captions[name])
-            data.append((im, eng, yor, w))
-            if w not in words2imgs: words2imgs[w] = []
-            words2imgs[w].append(Path(im).stem)
-            if w not in words2aud: words2aud[w] = []
-            words2aud[w].append(Path(yor).stem)
+        name = Path(eng).stem
+        if name in yoruba_alignments:
+            if w in yoruba_alignments[name]: 
+                if re.search(w + ' ', captions[name]) is not None:
+                    # print(w, captions[name])
+                    data.append((im, eng, yor, w))
+                    if w not in words2aud: words2aud[w] = []
+                    words2aud[w].append(Path(yor).stem)
 
-        elif w in special_characters:
-            if re.search(special_characters[w] + ' ', captions[name]) is not None:
-                data.append((im, eng, yor, w))
-                if w not in words2imgs: words2imgs[w] = []
-                words2imgs[w].append(Path(im).stem)
-                if w not in words2aud: words2aud[w] = []
-                words2aud[w].append(Path(yor).stem)
+                elif w in special_characters:
+                    if re.search(special_characters[w] + ' ', captions[name]) is not None:
+                        data.append((im, eng, yor, w))
+                        if w not in words2aud: words2aud[w] = []
+                        words2aud[w].append(Path(yor).stem)
 
 test_episodes = {}
 
@@ -110,15 +109,17 @@ test_episodes = {}
 # Test queries  
 ##################################
 
+images = np.load(Path('../data/test_episodes_images.npz'), allow_pickle=True)['images'].item()
+
 for word in yoruba_vocab:
 
     aud_instances = np.random.choice(np.arange(0, len(words2aud[word])), num_episodes)
-    im_instances = np.random.choice(np.arange(0, len(words2imgs[word])), num_episodes)        
+    im_instances = np.random.choice(np.arange(0, len(images[y2etranslation[word]])), num_episodes)        
     for episode_num in tqdm(range(num_episodes)):
 
         if episode_num not in test_episodes: test_episodes[episode_num] = {'queries': {}, 'matching_set': {}}
         test_episodes[episode_num]['queries'][word] = (words2aud[word][aud_instances[episode_num]])
-        test_episodes[episode_num]['matching_set'][word] = (words2imgs[word][im_instances[episode_num]])
+        test_episodes[episode_num]['matching_set'][word] = (images[y2etranslation[word]][im_instances[episode_num]])
 
 
 for episode_n in range(num_episodes):

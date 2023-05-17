@@ -294,6 +294,7 @@ attention.eval()
 contrastive_loss.eval()
 image_base = Path('../../Datasets/Flicker8k_Dataset')
 episodes = np.load(Path('./data/yoruba_test_episodes.npz'), allow_pickle=True)['episodes'].item()
+counting = {}
 
 with torch.no_grad():
     acc = []
@@ -316,6 +317,7 @@ with torch.no_grad():
             m_images = []
             m_labels = []
             counting = {}
+            m_names = []
 
             for w in episode['matching_set']:
 
@@ -326,6 +328,7 @@ with torch.no_grad():
                 # this_image_output = this_image_output.mean(dim=1)
                 m_images.append(this_image_output)
                 m_labels.append(w)
+                m_names.append(str(episode['matching_set'][w]))
 
             for w in list(episode['matching_set']):
                 if w not in concepts: continue
@@ -336,24 +339,30 @@ with torch.no_grad():
             m_images = torch.cat(m_images, axis=0)
     
             for w in episode['queries']:
-                if w in ['fire hydrant', 'kite']: continue
+                # if w != 'ọmọ': continue
+                if w not in counting: counting[w] = 0
+                
                 if w not in results: results[w] = {'correct': 0, 'total': 0}
                 wav = episode['queries'][w]
 
                 lookup = str(Path(wav).stem)
-                if lookup in yoruba_alignments:
-                    if w in yoruba_alignments[lookup]:
-                        this_english_audio_feat, this_english_nframes = LoadAudio(aud_files / Path('flickr_audio_yoruba_test') / Path(wav + '.wav'), yoruba_alignments[lookup][w], audio_conf)
-                        this_english_audio_feat, this_english_nframes = PadFeat(this_english_audio_feat, target_length, padval)
-                        _, _, query = audio_model(this_english_audio_feat.to(rank))
-                        n_frames = NFrames(this_english_audio_feat, query, this_english_nframes) 
-                        scores = attention.module.one_to_many_score(m_images, query, n_frames).squeeze()
+    #             # if lookup not in yoruba_alignments:
+                # if w in yoruba_alignments[lookup]:
+                this_english_audio_feat, this_english_nframes = LoadAudio(aud_files / Path('flickr_audio_yoruba_test') / Path(wav + '.wav'), yoruba_alignments[lookup][w], audio_conf)
+                this_english_audio_feat, this_english_nframes = PadFeat(this_english_audio_feat, target_length, padval)
+                _, _, query = audio_model(this_english_audio_feat.to(rank))
+                n_frames = NFrames(this_english_audio_feat, query, this_english_nframes) 
+                scores = attention.module.one_to_many_score(m_images, query, n_frames).squeeze()
 
-                        ind = torch.argmax(scores).item()
-                        if w == m_labels[ind]: 
-                            results[w]['correct'] += 1
-                        results[w]['total'] += 1
-            # if episode_num == 99: break
+                ind = torch.argmax(scores).item()
+                if w == m_labels[ind]: 
+                    results[w]['correct'] += 1
+                results[w]['total'] += 1
+                counting[w] += 1
+
+            
+                
+            # if episode_num == 9: break
             
             
         c = 0
@@ -373,3 +382,4 @@ with torch.no_grad():
     avg = np.mean(np.asarray(acc))
     var = np.std(np.asarray(acc))
     print(f'\nOverall mean {avg}% and std {var}%')
+    # print(counting)

@@ -14,7 +14,7 @@ import string
 
 num_episodes = 1000
 
-aud_files = Path("../../Datasets/flickr_audio")
+aud_files = Path("../../../Datasets/flickr_audio")
 ss_save_fn = '../support_set/support_set.npz'
 image_base = Path('../../Datasets/Flicker8k_Dataset')
 support_set = np.load(ss_save_fn, allow_pickle=True)['support_set'].item()
@@ -73,97 +73,31 @@ with open(val_fn, 'r') as f:
     val = json.load(f)
 
 data = []
-words2imgs = {}
 words2aud = {}
 for w in val:
     for im, eng, yor in val[w]:
         data.append((im, eng, yor, w))
-        if w not in words2imgs: words2imgs[w] = []
-        words2imgs[w].append(Path(im).stem)
         if w not in words2aud: words2aud[w] = []
         words2aud[w].append(Path(eng).stem)
 
-# images = {}
-# audio = {}
-# captions = {}
-# with open(Path("../../Datasets/flickr_audio") / 'flickr_8k.ctm', 'r') as f:
-#     for line in f:
-#         name, _, start, dur, label = line.strip().split()
-#         wav = name.split('.')[0] + '_' + name.split('#')[-1]
-#         if wav not in captions: captions[wav] = label.lower()
-#         else: 
-#             captions[wav] += ' '
-#             captions[wav] += label.lower()
-
-# image_captions = {}
-# for wav in captions:
-#     caption = captions[wav]
-#     name = '_'.join(wav.split('_')[0:2])
-#     for v in vocab:
-#         if re.search(v, caption) is not None:
-#             if name not in image_captions: image_captions[name] = []
-#             image_captions[name].append(captions[wav])
-
-# audio_captions = {}
-# for name in captions:
-#     caption = captions[wav]
-#     for v in vocab:
-#         if re.search(v, caption) is not None:
-#             if name not in audio_captions: audio_captions[name] = []
-#             audio_captions[name].append(captions[wav])
-
-# for name in tqdm(captions):
-#     caption = captions[name]
-#     c = False
-#     for v in vocab:
-#         if re.search(v, caption) is not None:
-#             c = True
-#     if c is False: 
-#         neg_wavs.add(name)
-
-# for entry in data: 
-#     im = entry['image']
-#     id = int(Path(im).stem.split('_')[-1])
-#     for caption in entry['captions']:
-#         for word in vocab:
-#             if re.search(word, caption['text'].lower()) is not None and Path(caption['wav']).stem in alignments:# and word in image_annotations[id]:
-#                 if word not in val: val[word] = []
-#                 val[word].append((im, caption['wav'], caption['speaker'], id_to_caption[id]))
-
 test_episodes = {}
-
-# matching_set = {}
-
-# ##################################
-# # Test matching set 
-# ##################################
-
-# for entry in data:
-#     im = entry['image']
-#     if im not in matching_set: matching_set[im] = set()
-#     for caption in entry['captions']:
-        
-#         for word in vocab:
-#             if re.search(word, caption['text'].lower()) is not None:
-#                 if im not in matching_set: matching_set[im] = set()
-#                 matching_set[im].add(word)
-#         # used_images.add(im)
-# test_episodes['matching_set'] = matching_set
-# print(len(matching_set))
 
 ##################################
 # Test queries  
 ##################################
 
+images = np.load(Path('../data/test_episodes_images.npz'), allow_pickle=True)['images'].item()
+
+
 for word in vocab:
 
     aud_instances = np.random.choice(np.arange(0, len(words2aud[word])), num_episodes)
-    im_instances = np.random.choice(np.arange(0, len(words2imgs[word])), num_episodes)        
+    im_instances = np.random.choice(np.arange(0, len(images[word])), num_episodes)        
     for episode_num in tqdm(range(num_episodes)):
 
         if episode_num not in test_episodes: test_episodes[episode_num] = {'queries': {}, 'matching_set': {}}
         test_episodes[episode_num]['queries'][word] = (words2aud[word][aud_instances[episode_num]])
-        test_episodes[episode_num]['matching_set'][word] = (words2imgs[word][im_instances[episode_num]])
+        test_episodes[episode_num]['matching_set'][word] = (images[word][im_instances[episode_num]])
 
 
 for episode_n in range(num_episodes):
