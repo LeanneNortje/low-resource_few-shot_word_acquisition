@@ -242,7 +242,7 @@ def spawn_training(rank, world_size, image_base, args):
 
     start_epoch += 1
 
-    for epoch in np.arange(start_epoch, args["n_epochs"] + 1 + 50):
+    for epoch in np.arange(start_epoch, args["n_epochs"] + 1):
         train_sampler.set_epoch(int(epoch))
         current_learning_rate = adjust_learning_rate(args, optimizer, epoch, 0.00001)
 

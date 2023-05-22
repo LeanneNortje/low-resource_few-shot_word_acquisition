@@ -39,7 +39,7 @@ class ImageAudioDatawithSampling(Dataset):
 
         with open(dataset_json_file, 'r') as fp:
             data = json.load(fp)
-        self.image_base_path = Path('..').absolute()
+        self.image_base_path = Path(image_base_path).absolute()
         print(self.image_base_path)
         self.data = data
         self.n = 10
@@ -111,7 +111,7 @@ class ImageAudioDatawithSampling(Dataset):
             neg_img_name = str(Path(neg_img_fn).stem)
             if im_name == neg_img_name or neg_im_id[i] == id:  print("Image negative sampling went wrong.")
             imgpath = self.image_base_path / neg_img_fn
-            # print('n', imgpath)
+            # print('n', imgpath, imgpath.is_file())
             img1 = Image.open(imgpath).convert('RGB')
             img1 = self.resize(img1)
             
@@ -158,14 +158,14 @@ class ImageAudioDatawithSampling(Dataset):
         
         imgpath = np.random.choice(self.pos_masks_to_images[id]['images'][image_name[0]], size=1)[0]
         imgpath = self.image_base_path / str(imgpath)
-        # print('a', imgpath)
+        # print('a', imgpath, imgpath.is_file())
         image = self._LoadImage(imgpath)
 
         positives = []
         for p in range(num_pos):
             imgpath = np.random.choice(self.pos_masks_to_images[id]['images'][image_name[p+1]], size=1)[0]
             imgpath = self.image_base_path / str(imgpath)
-            # print('p', imgpath)
+            # print('p', imgpath, imgpath.is_file())
             pos_image1 = self._LoadImage(imgpath)
 
             id_lookup = self.pos_masks_to_images[id]['audio'].copy()
@@ -196,7 +196,7 @@ class ImageAudioDatawithSamplingVal(Dataset):
 
         with open(dataset_json_file, 'r') as fp:
             data = json.load(fp)
-        self.image_base_path = Path('..').absolute()
+        self.image_base_path = Path(image_base_path).absolute()
         self.data = data
         self.n = 6
 

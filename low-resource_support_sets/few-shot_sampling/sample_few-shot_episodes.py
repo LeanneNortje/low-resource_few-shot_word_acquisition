@@ -74,11 +74,12 @@ with open(val_fn, 'r') as f:
 
 data = []
 words2aud = {}
-for w in val:
+for w in vocab:
     for im, eng, yor in val[w]:
-        data.append((im, eng, yor, w))
-        if w not in words2aud: words2aud[w] = []
-        words2aud[w].append(Path(eng).stem)
+        if Path(eng).stem not in s_wavs:
+            data.append((im, eng, yor, w))
+            if w not in words2aud: words2aud[w] = []
+            words2aud[w].append(Path(eng).stem)
 
 test_episodes = {}
 
@@ -87,7 +88,7 @@ test_episodes = {}
 ##################################
 
 images = np.load(Path('../data/test_episodes_images.npz'), allow_pickle=True)['images'].item()
-
+image_words = np.load(Path('../data/test_episodes_images.npz'), allow_pickle=True)['image_words'].item()
 
 for word in vocab:
 
@@ -95,9 +96,10 @@ for word in vocab:
     im_instances = np.random.choice(np.arange(0, len(images[word])), num_episodes)        
     for episode_num in tqdm(range(num_episodes)):
 
-        if episode_num not in test_episodes: test_episodes[episode_num] = {'queries': {}, 'matching_set': {}}
-        test_episodes[episode_num]['queries'][word] = (words2aud[word][aud_instances[episode_num]])
-        test_episodes[episode_num]['matching_set'][word] = (images[word][im_instances[episode_num]])
+        if episode_num not in test_episodes: test_episodes[episode_num] = {'queries': {}, 'matching_set': {}, 'possible_words': {}}
+        test_episodes[episode_num]['queries'][word] = words2aud[word][aud_instances[episode_num]]
+        test_episodes[episode_num]['matching_set'][word] = images[word][im_instances[episode_num]]
+        test_episodes[episode_num]['possible_words'][word] = image_words[images[word][im_instances[episode_num]]]
 
 
 for episode_n in range(num_episodes):

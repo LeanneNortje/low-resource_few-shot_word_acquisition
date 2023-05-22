@@ -21,7 +21,7 @@
     "learning_rate_scheduler": {
         "initial_learning_rate":0.00001,
         "num_epochs": [10, 20, 70, 80],
-        "learning_rates": [0.00001, 0.0001, 0.00001, 0.00001],
+        "learning_rates": [0.00001, 0.00001, 0.00001, 0.00001],
         "decay_every_n_epochs": 10,
         "decay_factor": 0.95
     },

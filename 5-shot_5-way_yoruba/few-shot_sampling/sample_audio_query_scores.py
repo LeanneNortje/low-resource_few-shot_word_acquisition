@@ -50,7 +50,7 @@ for name in tqdm(support_set):
     _, img, wav, _, _, word, start, end, _ = support_set[name]
     # print(wav, start, end)
 
-    fn = Path(wav).relative_to(*Path(wav).parts[:3]).with_suffix('.npz')
+    fn = Path(wav).relative_to(*Path(wav).parts[:4]).with_suffix('.npz')
     fn = audio_segments_dir / fn
 
     query = np.load(fn)
@@ -198,10 +198,10 @@ for id in query_scores:
 for id in newly_labeled:
     print(id, len(newly_labeled[id]))
 
-# np.savez_compressed(
-#     Path("../data/sampled_audio_data"), 
-#     data=newly_labeled
-# )
+np.savez_compressed(
+    Path("../data/sampled_audio_data"), 
+    data=newly_labeled
+)
 
 np.savez_compressed(
     Path("../data/sampled_audio_frame_info"), 

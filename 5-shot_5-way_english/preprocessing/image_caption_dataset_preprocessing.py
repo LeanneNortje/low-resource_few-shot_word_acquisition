@@ -111,7 +111,7 @@ class spokencocoData(Dataset):
         self.audio_conf = audio_conf
 
         self.wav_dict = {}
-
+        print(audio_fn)
         fns = self.audio_fn.rglob("*.wav")
         for fn in fns:
             if fn.stem not in self.wav_dict: self.wav_dict[fn.stem] = fn

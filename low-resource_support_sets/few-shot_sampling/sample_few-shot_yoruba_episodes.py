@@ -68,12 +68,14 @@ for cap_fn in Path('../../../Datasets/yfacc_v6/Flickr8k_text').rglob('Flickr8k.t
 
 s_imgs = []
 s_wavs = []
+s_names = []
 
 for wav_name in tqdm(support_set):
 
     eng, img, wav, start, dur, word, _, _, _ = support_set[wav_name]
     s_wavs.append(Path(wav).stem)
     s_imgs.append(Path(img).stem)
+    s_names.append(Path(eng).stem)
 
 with open(val_fn, 'r') as f:
     val = json.load(f)
@@ -85,11 +87,11 @@ special_characters = {
 
 data = []
 words2aud = {}
-for e_w in val:
+for e_w in vocab:
     w = translation[e_w]
     for im, eng, yor in val[e_w]:
         name = Path(eng).stem
-        if name in yoruba_alignments:
+        if name in yoruba_alignments and name not in s_names:
             if w in yoruba_alignments[name]: 
                 if re.search(w + ' ', captions[name]) is not None:
                     # print(w, captions[name])
@@ -110,6 +112,7 @@ test_episodes = {}
 ##################################
 
 images = np.load(Path('../data/test_episodes_images.npz'), allow_pickle=True)['images'].item()
+image_words = np.load(Path('../data/test_episodes_images.npz'), allow_pickle=True)['image_words'].item()
 
 for word in yoruba_vocab:
 
@@ -117,9 +120,11 @@ for word in yoruba_vocab:
     im_instances = np.random.choice(np.arange(0, len(images[y2etranslation[word]])), num_episodes)        
     for episode_num in tqdm(range(num_episodes)):
 
-        if episode_num not in test_episodes: test_episodes[episode_num] = {'queries': {}, 'matching_set': {}}
+        if episode_num not in test_episodes: test_episodes[episode_num] = {'queries': {}, 'matching_set': {}, 'possible_words': {}}
         test_episodes[episode_num]['queries'][word] = (words2aud[word][aud_instances[episode_num]])
         test_episodes[episode_num]['matching_set'][word] = (images[y2etranslation[word]][im_instances[episode_num]])
+        y_words = [translation[e] for e in image_words[images[y2etranslation[word]][im_instances[episode_num]]]]
+        test_episodes[episode_num]['possible_words'][word] = y_words
 
 
 for episode_n in range(num_episodes):

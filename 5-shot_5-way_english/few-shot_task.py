@@ -186,34 +186,39 @@ with open(aud_files / 'flickr_8k.ctm', 'r') as f:
         prev_wav = wav
         prev_start = start
 
-# alignments = {}
-# translation = {}
-# yoruba_vocab = []
-# with open(Path('../../Datasets/yfacc_v6/Flickr8k_text/eng_yoruba_keywords.txt'), 'r') as f:
-#     for line in f:
-#         e, y = line.strip().split(', ')
-#         if e in concepts:
-#             translation[y] = e
-#             yoruba_vocab.append(y)
-# for y in translation:
-#     print(y, translation[y])
+yoruba_alignments = {}
+translation = {}
+image_labels = {}
+yoruba_vocab = []
+with open(Path('../../Datasets/yfacc_v6/Flickr8k_text/eng_yoruba_keywords.txt'), 'r') as f:
+    for line in f:
+        e, y = line.strip().split(', ')
+        if e in concepts:
+            translation[y] = e
+            yoruba_vocab.append(y)
+for y in translation:
+    print(y, translation[y])
 
-# for txt_grid in Path('../../Datasets/yfacc_v6/Flickr8k_alignment').rglob('*.TextGrid'):
-#     if str(txt_grid) == '../../Datasets/yfacc_v6/Flickr8k_alignment/3187395715_f2940c2b72_0.TextGrid': continue
-#     grid = textgrids.TextGrid(txt_grid)
-#     wav = 'S001_' + txt_grid.stem
-    
-#     for interval in grid['words']:
+for txt_grid in Path('../../Datasets/yfacc_v6/Flickr8k_alignment').rglob('*.TextGrid'):
+    if str(txt_grid) == '../../Datasets/yfacc_v6/Flickr8k_alignment/3187395715_f2940c2b72_0.TextGrid': continue
+    grid = textgrids.TextGrid(txt_grid)
+    wav = 'S001_' + txt_grid.stem
+    im = '_'.join(txt_grid.stem.split('_')[0:2])
+
+    for interval in grid['words']:
         
-#         x = str(interval).split()
-#         label = str(interval).split('"')[1]
-#         start = x[-2].split('=')[-1]
-#         dur = x[-1].split('=')[-1].split('>')[0]
+        x = str(interval).split()
+        label = str(interval).split('"')[1]
+        start = x[-2].split('=')[-1]
+        dur = x[-1].split('=')[-1].split('>')[0]
+        if im == '2933912528_52b05f84a1': print(label)
+        if label in yoruba_vocab:
+            if wav not in yoruba_alignments: yoruba_alignments[wav] = {}
+            if label not in yoruba_alignments[wav]: 
+                yoruba_alignments[wav][label] = (int(float(start)*100), int((float(start) + float(dur))*100))
 
-#         if label in yoruba_vocab:
-#             if wav not in yoruba_alignments: yoruba_alignments[wav] = {}
-#             if label not in yoruba_alignments[wav]: 
-#                 yoruba_alignments[wav][label] = (int(float(start)*100), int((float(start) + float(dur))*100))
+            if im not in image_labels: image_labels[im] = set()
+            image_labels[im].add(translation[label])
 
 audio_conf = args["audio_config"]
 target_length = audio_conf.get('target_length', 1024)
@@ -315,6 +320,7 @@ with torch.no_grad():
             
             m_images = []
             m_labels = []
+            m_names = []
             counting = {}
 
             for w in episode['matching_set']:
@@ -326,6 +332,8 @@ with torch.no_grad():
                 # this_image_output = this_image_output.mean(dim=1)
                 m_images.append(this_image_output)
                 m_labels.append(w)
+                m_names.append(str(episode['matching_set'][w]))
+
 
             for w in list(episode['matching_set']):
                 if w not in concepts: continue
@@ -352,10 +360,12 @@ with torch.no_grad():
                         scores = attention.module.one_to_many_score(m_images, query, n_frames).squeeze()
 
                         ind = torch.argmax(scores).item()
-                        if w == m_labels[ind]: 
+                        # print(w, scores, ind, m_labels[ind], image_labels[m_names[ind]], episode['possible_words'][w])
+                        if m_labels[ind] in episode['possible_words'][w]:  
                             results[w]['correct'] += 1
                         results[w]['total'] += 1
-            # if episode_num == 99: break
+            # if episode_num == 49: break
+            # break
             
             
         c = 0

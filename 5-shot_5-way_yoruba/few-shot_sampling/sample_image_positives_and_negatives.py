@@ -68,7 +68,7 @@ cos = torch.nn.CosineSimilarity(dim=1, eps=1e-6)
 for wav_name in tqdm(support_set):
     wav, img, yor, start, dur, word, _, _, _ = support_set[wav_name]
     name = Path(img).stem
-    image = LoadImage(Path('../..') / img, resize, image_normalize, to_tensor).unsqueeze(0)
+    image = LoadImage(Path('..') / img, resize, image_normalize, to_tensor).unsqueeze(0)
     im = image_model(image.to(rank))
 
     if word not in s_images: s_images[word] = []

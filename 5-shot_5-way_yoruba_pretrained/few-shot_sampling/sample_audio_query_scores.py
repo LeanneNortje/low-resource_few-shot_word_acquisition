@@ -50,7 +50,7 @@ for name in tqdm(support_set):
     _, img, wav, _, _, word, start, end, _ = support_set[name]
     # print(wav, start, end)
 
-    fn = Path(wav).relative_to(*Path(wav).parts[:3]).with_suffix('.npz')
+    fn = Path(wav).relative_to(*Path(wav).parts[:4]).with_suffix('.npz')
     fn = audio_segments_dir / fn
 
     query = np.load(fn)
@@ -157,10 +157,12 @@ save_dir = Path('segment_examples')
 audio_dir = Path("../../Datasets/yfacc_v6")
 top_N = 100
 newly_labeled = {}
+frame_info = {}
 
 for id in query_scores:
     indices = np.argsort(query_scores[id]['values'])[::-1]
     if id not in newly_labeled: newly_labeled[id] = []
+    if id not in frame_info: frame_info[id] = []
     
     for i in range(len(indices)):
         if len(newly_labeled[id]) == top_N: break
@@ -188,8 +190,8 @@ for id in query_scores:
                     torchaudio.save(fn.with_suffix('.wav'), aud, sr)
 
                     newly_labeled[id].append(wav)
-                    newly_labeled
-                    i += 1
+                    
+                    frame_info[id].append((wav, offset, wT*16000))
                     # print(len(newly_labeled[id]))
                     # print(i)
 
@@ -199,4 +201,9 @@ for id in newly_labeled:
 np.savez_compressed(
     Path("../data/sampled_audio_data"), 
     data=newly_labeled
+)
+
+np.savez_compressed(
+    Path("../data/sampled_audio_frame_info"), 
+    data=frame_info
 )

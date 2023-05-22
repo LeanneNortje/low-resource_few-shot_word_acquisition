@@ -242,7 +242,7 @@ def spawn_training(rank, world_size, image_base, args):
 
     start_epoch += 1
 
-    for epoch in np.arange(start_epoch, args["n_epochs"] + 1 + 50):
+    for epoch in np.arange(start_epoch, args["n_epochs"] + 1):
         train_sampler.set_epoch(int(epoch))
         current_learning_rate = adjust_learning_rate(args, optimizer, epoch, 0.00001)
 
@@ -329,7 +329,7 @@ if __name__ == "__main__":
     parser.add_argument("--config-file", type=str, default='matchmap', choices=['matchmap'],
             help="Model config file.")
     parser.add_argument("--restore-epoch", type=int, default=-1, help="Epoch to resore training from.")
-    parser.add_argument("--image-base", default="../..", help="Path to images.")
+    parser.add_argument("--image-base", default="..", help="Path to images.")
     command_line_args = parser.parse_args()
 
     # Setting up model specifics

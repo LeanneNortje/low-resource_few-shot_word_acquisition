@@ -49,7 +49,7 @@ for name in tqdm(support_set):
 
     wav, _, _, start, end, word, _, _, _ = support_set[name]
 
-    fn = Path(wav).relative_to(*Path(wav).parts[:3]).with_suffix('.npz')
+    fn = Path(wav).relative_to(*Path(wav).parts[:4]).with_suffix('.npz')
     fn = audio_segments_dir / fn
 
     query = np.load(fn)
@@ -184,7 +184,7 @@ for id in query_scores:
                 # print(frames, aud.size())
                 if frames == aud.size(1):
                     
-                    # torchaudio.save(fn.with_suffix('.wav'), aud, sr)
+                    torchaudio.save(fn.with_suffix('.wav'), aud, sr)
 
                     newly_labeled[id].append(wav)
                     

@@ -186,7 +186,7 @@ for id in s:
 
         image_name = Path(image).stem
         if image_name not in pos_lookup[id]['images']: pos_lookup[id]['images'][image_name] = []
-        pos_lookup[id]['images'][image_name].append(str(image))
+        pos_lookup[id]['images'][image_name].append(Path('/'.join(str(image).split('/')[1:])))
 
 for id in audio_samples:
 

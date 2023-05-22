@@ -188,6 +188,7 @@ aud_files = Path("../../Datasets/yfacc_v6")
 
 yoruba_alignments = {}
 translation = {}
+image_labels = {}
 yoruba_vocab = []
 with open(Path('../../Datasets/yfacc_v6/Flickr8k_text/eng_yoruba_keywords.txt'), 'r') as f:
     for line in f:
@@ -202,18 +203,22 @@ for txt_grid in Path('../../Datasets/yfacc_v6/Flickr8k_alignment').rglob('*.Text
     if str(txt_grid) == '../../Datasets/yfacc_v6/Flickr8k_alignment/3187395715_f2940c2b72_0.TextGrid': continue
     grid = textgrids.TextGrid(txt_grid)
     wav = 'S001_' + txt_grid.stem
-    
+    im = '_'.join(txt_grid.stem.split('_')[0:2])
+
     for interval in grid['words']:
         
         x = str(interval).split()
         label = str(interval).split('"')[1]
         start = x[-2].split('=')[-1]
         dur = x[-1].split('=')[-1].split('>')[0]
-
+        if im == '2933912528_52b05f84a1': print(label)
         if label in yoruba_vocab:
             if wav not in yoruba_alignments: yoruba_alignments[wav] = {}
             if label not in yoruba_alignments[wav]: 
                 yoruba_alignments[wav][label] = (int(float(start)*100), int((float(start) + float(dur))*100))
+
+            if im not in image_labels: image_labels[im] = set()
+            image_labels[im].add(label)
 
 audio_conf = args["audio_config"]
 target_length = audio_conf.get('target_length', 1024)
@@ -294,7 +299,6 @@ attention.eval()
 contrastive_loss.eval()
 image_base = Path('../../Datasets/Flicker8k_Dataset')
 episodes = np.load(Path('./data/yoruba_test_episodes.npz'), allow_pickle=True)['episodes'].item()
-counting = {}
 
 with torch.no_grad():
     acc = []
@@ -316,8 +320,8 @@ with torch.no_grad():
             
             m_images = []
             m_labels = []
-            counting = {}
             m_names = []
+            counting = {}
 
             for w in episode['matching_set']:
 
@@ -339,30 +343,24 @@ with torch.no_grad():
             m_images = torch.cat(m_images, axis=0)
     
             for w in episode['queries']:
-                # if w != 'ọmọ': continue
-                if w not in counting: counting[w] = 0
-                
                 if w not in results: results[w] = {'correct': 0, 'total': 0}
                 wav = episode['queries'][w]
 
                 lookup = str(Path(wav).stem)
-    #             # if lookup not in yoruba_alignments:
-                # if w in yoruba_alignments[lookup]:
-                this_english_audio_feat, this_english_nframes = LoadAudio(aud_files / Path('flickr_audio_yoruba_test') / Path(wav + '.wav'), yoruba_alignments[lookup][w], audio_conf)
-                this_english_audio_feat, this_english_nframes = PadFeat(this_english_audio_feat, target_length, padval)
-                _, _, query = audio_model(this_english_audio_feat.to(rank))
-                n_frames = NFrames(this_english_audio_feat, query, this_english_nframes) 
-                scores = attention.module.one_to_many_score(m_images, query, n_frames).squeeze()
+                if lookup in yoruba_alignments:
+                    if w in yoruba_alignments[lookup]:
+                        this_english_audio_feat, this_english_nframes = LoadAudio(aud_files / Path('flickr_audio_yoruba_test') / Path(wav + '.wav'), yoruba_alignments[lookup][w], audio_conf)
+                        this_english_audio_feat, this_english_nframes = PadFeat(this_english_audio_feat, target_length, padval)
+                        _, _, query = audio_model(this_english_audio_feat.to(rank))
+                        n_frames = NFrames(this_english_audio_feat, query, this_english_nframes) 
+                        scores = attention.module.one_to_many_score(m_images, query, n_frames).squeeze()
 
-                ind = torch.argmax(scores).item()
-                if w == m_labels[ind]: 
-                    results[w]['correct'] += 1
-                results[w]['total'] += 1
-                counting[w] += 1
-
-            
-                
-            # if episode_num == 9: break
+                        ind = torch.argmax(scores).item()
+                        if w in image_labels[m_names[ind]]: 
+                            results[w]['correct'] += 1
+                        results[w]['total'] += 1
+            # if episode_num == 49: break
+            # break
             
             
         c = 0
@@ -382,4 +380,3 @@ with torch.no_grad():
     avg = np.mean(np.asarray(acc))
     var = np.std(np.asarray(acc))
     print(f'\nOverall mean {avg}% and std {var}%')
-    # print(counting)

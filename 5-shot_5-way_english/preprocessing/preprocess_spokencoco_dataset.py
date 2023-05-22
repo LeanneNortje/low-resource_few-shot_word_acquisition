@@ -31,7 +31,7 @@ def heading(string):
     print("-"*10 + string + "-"*10 + "\n")
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument("--image-base", default="..", help="Path to images.")
+parser.add_argument("--image-base", default="../..", help="Path to images.")
 command_line_args = parser.parse_args()
 
 image_base = Path(command_line_args.image_base).absolute()
@@ -39,10 +39,10 @@ image_base = Path(command_line_args.image_base).absolute()
 with open("preprocessing_spokencoco_config.json") as file:
   args = json.load(file)
 
-args["data_train"] = image_base / args["data_train"]
-args["data_val"] = image_base / args["data_val"]
+args["data_train"] = Path('..') / args["data_train"]
+args["data_val"] = Path('..')  / args["data_val"]
 
-args["audio_base"] = image_base / args["audio_base"]
+args["audio_base"] = (Path('..') / args["audio_base"]).absolute()
 args["out_dir"] = Path(args["out_dir"])
 
 if not os.path.isdir((Path("..") / args["out_dir"]).absolute()):

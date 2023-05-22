@@ -16,9 +16,9 @@ nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger')
 from nltk.tokenize import word_tokenize, sent_tokenize
 
-aud_files = Path("../Datasets/flickr_audio")
-im_files = Path("../Datasets/Flicker8k_Dataset")
-yoruba_files = Path("../Datasets/yfacc_v6")
+aud_files = Path("../../Datasets/flickr_audio")
+im_files = Path("../../Datasets/Flicker8k_Dataset")
+yoruba_files = Path("../../Datasets/yfacc_v6")
 ##########################
 concepts = [] 
 with open('./data/test_keywords.txt', 'r') as f:
@@ -120,7 +120,16 @@ for base_name in splits['train']:
                     break
             train[w].append((str(image), str(wav), str(yor_wav)))
 
+
+sorting = {}
 for w in train:
+    e_1 = len(train[w]) + len(val[w])
+    e_2 = len(test[w])
+    # print(f'{w}\t{e_1}:{e_2}')
+    sorting[w] = e_1 + e_2
+
+for entry in sorted(sorting.items(), key=lambda x:x[1], reverse=True):
+    w = entry[0]
     e_1 = len(train[w]) + len(val[w])
     e_2 = len(test[w])
     print(f'{w}\t{e_1}:{e_2}')
