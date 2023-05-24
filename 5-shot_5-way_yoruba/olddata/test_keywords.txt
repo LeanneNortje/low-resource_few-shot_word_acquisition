@@ -1,5 +1,0 @@
-ball
-boy
-dogs
-grass
-water

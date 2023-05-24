@@ -315,7 +315,7 @@ with torch.no_grad():
         # episode_names = np.random.choice(episode_names, 100, replace=False)
 
         for episode_num in tqdm(sorted(episode_names)):
-
+            # episode_num = 3
             episode = episodes[episode_num]
             
             m_images = []
@@ -358,6 +358,11 @@ with torch.no_grad():
                         _, _, query = audio_model(this_english_audio_feat.to(rank))
                         n_frames = NFrames(this_english_audio_feat, query, this_english_nframes) 
                         scores = attention.module.one_to_many_score(m_images, query, n_frames).squeeze()
+                        # print()
+                        # a = aud_files/ Path('wavs') / Path(wav + '.wav')
+                        # print(f'Query: {w}\t{a}\t{alignments[lookup][w]}')
+                        # for k in range(scores.size(0)):
+                        #     print(m_labels[k], scores[k].item(), m_names[k])
 
                         ind = torch.argmax(scores).item()
                         # print(w, scores, ind, m_labels[ind], image_labels[m_names[ind]], episode['possible_words'][w])

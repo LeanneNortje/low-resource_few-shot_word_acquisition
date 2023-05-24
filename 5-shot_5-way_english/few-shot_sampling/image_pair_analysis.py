@@ -31,68 +31,30 @@ with open(aud_files / 'flickr_8k.ctm', 'r') as f:
         name, _, start, dur, label = line.strip().split()
         wav = name.split('.')[0]
         label = label.lower()
+        
         if label in vocab:
             if wav not in image_annotations: image_annotations[wav] = []
             image_annotations[wav].append(label)
-    
-
-# categories = {}
-# for json_fn in Path('../../Datasets/spokencoco/panoptic_annotations_trainval2017').rglob('*.json'):
-#     if re.search('__MACOSX', str(json_fn)) is not None: continue
-#     with open(json_fn, 'r') as f:
-#         data = json.load(f)
-
-#     # for entry in data['images']:
-#     #     print(entry)
-#     #     break
-
-#     for entry in data['categories']:
-#         for word in vocab:
-#             if re.search(word, entry['name']) is not None: categories[entry['id']] = entry['name']
-#     # break
-# for id in categories:
-#     print(id, categories[id])
-
-# image_annotations = {}
-# for json_fn in Path('../../Datasets/spokencoco/panoptic_annotations_trainval2017').rglob('*.json'):
-#     if re.search('__MACOSX', str(json_fn)) is not None: continue
-#     with open(json_fn, 'r') as f:
-#         data = json.load(f)
-
-#     for entry in data['annotations']:
-#         if entry['image_id'] not in image_annotations: image_annotations[entry['image_id']] = set()
-#         for seg in entry['segments_info']:
-#             if seg['category_id'] in categories: image_annotations[entry['image_id']].add(categories[seg['category_id']])
-    
-train_id_lookup = np.load(Path("../data/train_lookup.npz"), allow_pickle=True)['lookup'].item()
-val_id_lookup = np.load(Path("../data/val_lookup.npz"), allow_pickle=True)['lookup'].item()
-train_neg_id_lookup = np.load(Path("../data/train_lookup.npz"), allow_pickle=True)['neg_lookup'].item()
+      
+samples = np.load(Path("../data/sampled_img_data.npz"), allow_pickle=True)['data'].item()
 train_audio_per_keyword_acc = {}
 results = {}
+track = set()
 
-for id in train_id_lookup:
+for id in samples:
 
     pred_word = key[id]
 
-    for name in train_id_lookup[id]['images']: 
-        # if name not in transcriptions: continue
-        # image_name = int(name.split('_')[-1])
+    for im in samples[id]: 
+        name = Path(im).stem 
         if name in image_annotations:
             if name not in results: results[name] = {'pred': [], 'gt': set()}
             results[name]['pred'].append(pred_word)
             results[name]['gt'].update(image_annotations[name])
+        else: track.add(name)
 
-for id in val_id_lookup:
-
-    pred_word = key[id]
-
-    for name in val_id_lookup[id]['images']: 
-        # if name not in transcriptions: continue
-        # image_name = int(name.split('_')[-1])
-        if name in image_annotations:
-            if name not in results: results[name] = {'pred': [], 'gt': set()}
-            results[name]['pred'].append(pred_word)
-            results[name]['gt'].update(image_annotations[name])
+# for e in sorted(track):
+#     print(e)
 
 for i, name in enumerate(results):
     
