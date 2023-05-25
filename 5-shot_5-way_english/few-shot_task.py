@@ -366,7 +366,7 @@ with torch.no_grad():
 
                         ind = torch.argmax(scores).item()
                         # print(w, scores, ind, m_labels[ind], image_labels[m_names[ind]], episode['possible_words'][w])
-                        if m_labels[ind] in episode['possible_words'][w]:  
+                        if w in image_labels[m_names[ind]]:  
                             results[w]['correct'] += 1
                         results[w]['total'] += 1
             # if episode_num == 49: break

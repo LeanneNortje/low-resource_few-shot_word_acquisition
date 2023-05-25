@@ -356,6 +356,7 @@ with torch.no_grad():
                         scores = attention.module.one_to_many_score(m_images, query, n_frames).squeeze()
 
                         ind = torch.argmax(scores).item()
+                        image_labels[m_names[ind]]
                         if w in image_labels[m_names[ind]]: 
                             results[w]['correct'] += 1
                         results[w]['total'] += 1
