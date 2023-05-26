@@ -315,7 +315,7 @@ with torch.no_grad():
         # episode_names = np.random.choice(episode_names, 100, replace=False)
 
         for episode_num in tqdm(sorted(episode_names)):
-            # episode_num = 3
+            # episode_num = 1
             episode = episodes[episode_num]
             
             m_images = []

@@ -210,12 +210,12 @@ for txt_grid in Path('../../Datasets/yfacc_v6/Flickr8k_alignment').rglob('*.Text
         x = str(interval).split()
         label = str(interval).split('"')[1]
         start = x[-2].split('=')[-1]
-        dur = x[-1].split('=')[-1].split('>')[0]
+        end = x[-1].split('=')[-1].split('>')[0]
         if im == '2933912528_52b05f84a1': print(label)
         if label in yoruba_vocab:
             if wav not in yoruba_alignments: yoruba_alignments[wav] = {}
             if label not in yoruba_alignments[wav]: 
-                yoruba_alignments[wav][label] = (int(float(start)*100), int((float(start) + float(dur))*100))
+                yoruba_alignments[wav][label] = (int(float(start)*100), int((float(end))*100))
 
             if im not in image_labels: image_labels[im] = set()
             image_labels[im].add(label)
@@ -315,7 +315,7 @@ with torch.no_grad():
         # episode_names = np.random.choice(episode_names, 100, replace=False)
 
         for episode_num in tqdm(sorted(episode_names)):
-
+            # episode_num = 1
             episode = episodes[episode_num]
             
             m_images = []
@@ -355,6 +355,13 @@ with torch.no_grad():
                         n_frames = NFrames(this_english_audio_feat, query, this_english_nframes) 
                         scores = attention.module.one_to_many_score(m_images, query, n_frames).squeeze()
 
+                        
+                        # print()
+                        # a = aud_files/ Path('flickr_audio_yoruba_test') / Path(wav + '.wav')
+                        # print(f'Query: {w}\t{a}\t{yoruba_alignments[lookup][w]}')
+                        # print(yoruba_alignments[lookup][w])
+                        # for k in range(scores.size(0)):
+                        #     print(m_labels[k], scores[k].item(), m_names[k])
                         ind = torch.argmax(scores).item()
                         image_labels[m_names[ind]]
                         if w in image_labels[m_names[ind]]: 
